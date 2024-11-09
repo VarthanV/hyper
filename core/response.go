@@ -3,12 +3,14 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/pkg/errors"
 )
 
 const (
 	contentTypeHeader = "Content-Type"
+	contentLength     = "Content-Length"
 )
 
 type Response struct {
@@ -63,6 +65,7 @@ func (r *Response) WriteString(status int, val string) {
 func (r *Response) ToRaw() string {
 	statusText := getStatusText(r.statusCode)
 
+	r.headers[contentLength] = strconv.Itoa(len(r.body))
 	raw := fmt.Sprintf("HTTP/1.1 %d %s\r\n", r.statusCode, statusText)
 
 	// Append headers

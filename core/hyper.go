@@ -127,6 +127,8 @@ func (h *hyper) handleConnection(c net.Conn) {
 		handlerMap, ok := h.routesMap[request.Method]
 		if !ok {
 			// TODO: send 404 response
+			c.Close()
+			return
 		}
 
 		res := newResponse()
