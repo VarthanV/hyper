@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -81,7 +82,9 @@ func (h *hyper) handleConnection(c net.Conn) {
 
 // parseRequest: Reads the raw http request and parses it into “Request“ struct
 func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
-	request := &Request{}
+	request := &Request{
+		RemoteHostAddr: conn.RemoteAddr(),
+	}
 	reader := bufio.NewReader(conn)
 
 	// Parse the equest line (e.g., "GET /path HTTP/1.1")
@@ -90,8 +93,6 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 		log.Println("error in reading request line ", err)
 		return nil, err
 	}
-	log.Println("Request line ", requestLine)
-
 	// Split into parts
 
 	parts := strings.Split(requestLine, " ")
@@ -129,13 +130,32 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 		request.headers[key] = value
 	}
 
+	//  If there’s a Content-Length header, read the body
+	if l, ok := request.headers["Content-Length"]; ok {
+		log.Println("reading content")
+
+		lint, err := strconv.Atoi(l)
+		if err != nil {
+			log.Println("invalid content length ", err)
+			return nil, err
+		}
+
+		body := make([]byte, lint)
+		_, err = reader.Read(body)
+		if err != nil {
+			log.Println("error in reading request body ", err)
+			return nil, err
+		}
+		request.Body = body
+	}
+
 	log.Printf("%+v", request)
 
 	return nil, nil
 }
 
 /*
-Sample request line
+Sample raw request
 	POST /submit-form HTTP/1.1
 	Host: www.example.com
 	User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36

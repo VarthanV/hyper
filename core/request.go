@@ -7,6 +7,6 @@ type Request struct {
 	Path           string
 	Method         HttpMethod
 	Body           []byte
-	RemoteHostAddr *net.Addr
+	RemoteHostAddr net.Addr
 	headers        map[string]string
 }
