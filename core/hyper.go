@@ -124,6 +124,7 @@ func (h *hyper) handleConnection(c net.Conn) {
 			log.Println("error in parsing request")
 			c.Close()
 		}
+
 	}
 
 	go handleConn(c)
