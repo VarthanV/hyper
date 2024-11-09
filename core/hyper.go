@@ -33,7 +33,7 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 		}
 	}
 
-	// Print the routes mapping
+	// Print the routes:handler mapping
 	for method, routes := range h.routesMap {
 		for route, f := range routes {
 			fmt.Printf("%s %s ----------------------> %s\n", method, route, runtimeutils.GetFunctionName(f))
@@ -65,20 +65,34 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 	}
 }
 
-func (h *hyper) POST(path string, handler HandlerFunc) {
-	if _, ok := h.routesMap[HttpMethodPost]; !ok {
-		h.routesMap[HttpMethodPost] = make(map[string]HandlerFunc)
+func (h *hyper) mapHandlers(path string, method HttpMethod, handler HandlerFunc) {
+	if _, ok := h.routesMap[method]; !ok {
+		h.routesMap[method] = make(map[string]HandlerFunc)
 	}
+	h.routesMap[method][path] = handler
+}
 
-	h.routesMap[HttpMethodPost][path] = handler
+func (h *hyper) POST(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodPost, handler)
+}
+
+func (h *hyper) PUT(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodPut, handler)
+
+}
+
+func (h *hyper) PATCH(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodPatch, handler)
 }
 
 func (h *hyper) GET(path string, handler HandlerFunc) {
-	if _, ok := h.routesMap[HttpMethodGet]; !ok {
-		h.routesMap[HttpMethodGet] = make(map[string]HandlerFunc)
-	}
+	h.mapHandlers(path, HttpMethodGet, handler)
+}
 
-	h.routesMap[HttpMethodGet][path] = handler
+
+
+func (h *hyper) DELETE(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodPatch, handler)
 }
 
 func (h *hyper) handleConnection(c net.Conn) {
