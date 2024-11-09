@@ -139,7 +139,6 @@ func (h *hyper) handleConnection(c net.Conn) {
 		_, err = c.Write([]byte(res.ToRaw()))
 		if err != nil {
 			log.Println("unable to write to conn ", err)
-			c.Close()
 		}
 
 		log.Printf("%s %s  %d", request.Method, request.Path, res.statusCode)
