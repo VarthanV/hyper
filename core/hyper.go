@@ -112,19 +112,33 @@ func (h *hyper) handleConnection(c net.Conn) {
 	)
 
 	handleConn := func(c net.Conn) {
-
 		// Put in semaphore that we are handling the connection
 		sem <- struct{}{}
 		fmt.Println("Connection from ", c.RemoteAddr().String())
 
 		// Release the sem
 		<-sem
-		_, err := h.parseRequest(c)
+		request, err := h.parseRequest(c)
 		if err != nil {
 			log.Println("error in parsing request")
 			c.Close()
 		}
 
+		log.Printf("%+v", request)
+
+		handlerMap, ok := h.routesMap[request.Method]
+		if !ok {
+			// TODO: send 404 response
+		}
+
+		response := &Response{}
+		for k, f := range handlerMap {
+			if k == request.Path {
+				f(request, response)
+			}
+		}
+
+		log.Printf("%s %s  %d", request.Method, request.Path, response.statusCode)
 	}
 
 	go handleConn(c)
@@ -200,9 +214,7 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 		request.Body = body
 	}
 
-	log.Printf("%+v", request)
-
-	return nil, nil
+	return request, nil
 }
 
 /*
