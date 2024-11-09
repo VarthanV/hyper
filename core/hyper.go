@@ -37,7 +37,6 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 	for method, routes := range h.routesMap {
 		for route, f := range routes {
 			fmt.Printf("%s %s ----------------------> %s\n", method, route, runtimeutils.GetFunctionName(f))
-
 		}
 	}
 
@@ -78,7 +77,6 @@ func (h *hyper) POST(path string, handler HandlerFunc) {
 
 func (h *hyper) PUT(path string, handler HandlerFunc) {
 	h.mapHandlers(path, HttpMethodPut, handler)
-
 }
 
 func (h *hyper) PATCH(path string, handler HandlerFunc) {
