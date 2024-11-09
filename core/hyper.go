@@ -89,10 +89,20 @@ func (h *hyper) GET(path string, handler HandlerFunc) {
 	h.mapHandlers(path, HttpMethodGet, handler)
 }
 
-
-
 func (h *hyper) DELETE(path string, handler HandlerFunc) {
 	h.mapHandlers(path, HttpMethodPatch, handler)
+}
+
+func (h *hyper) OPTIONS(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodOptions, handler)
+}
+
+func (h *hyper) CONNECT(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodConnect, handler)
+}
+
+func (h *hyper) TRACE(path string, handler HandlerFunc) {
+	h.mapHandlers(path, HttpMethodTrace, handler)
 }
 
 func (h *hyper) handleConnection(c net.Conn) {
