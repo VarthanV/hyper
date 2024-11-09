@@ -1,15 +1,18 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/VarthanV/hyper/core"
 )
 
-func main() {
-	fmt.Println("hello world")
+func handleFoo(req *core.Request, res *core.Response) {
 
+}
+
+func main() {
 	h := core.New()
+
+	h.POST("/foo", handleFoo)
+	h.GET("/foo", handleFoo)
 
 	h.ListenAndServe("localhost", "9000", `                               
 	_   ___   ______  _____ ____  

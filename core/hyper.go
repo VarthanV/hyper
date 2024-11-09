@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/VarthanV/hyper/pkg/runtimeutils"
 )
 
 type hyper struct {
@@ -28,6 +30,14 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 	printStartupMessage := func() {
 		for msg := range startupMessageChan {
 			log.Println(msg)
+		}
+	}
+
+	// Print the routes mapping
+	for method, routes := range h.routesMap {
+		for route, f := range routes {
+			fmt.Printf("%s %s ----------------------> %s\n", method, route, runtimeutils.GetFunctionName(f))
+
 		}
 	}
 
@@ -53,6 +63,22 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 		h.handleConnection(conn)
 
 	}
+}
+
+func (h *hyper) POST(path string, handler HandlerFunc) {
+	if _, ok := h.routesMap[HttpMethodPost]; !ok {
+		h.routesMap[HttpMethodPost] = make(map[string]HandlerFunc)
+	}
+
+	h.routesMap[HttpMethodPost][path] = handler
+}
+
+func (h *hyper) GET(path string, handler HandlerFunc) {
+	if _, ok := h.routesMap[HttpMethodGet]; !ok {
+		h.routesMap[HttpMethodGet] = make(map[string]HandlerFunc)
+	}
+
+	h.routesMap[HttpMethodGet][path] = handler
 }
 
 func (h *hyper) handleConnection(c net.Conn) {
