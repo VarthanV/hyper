@@ -5,7 +5,7 @@ import (
 )
 
 func handleFoo(req *core.Request, res *core.Response) {
-	res.WriteStatusCode(200)
+	res.WriteStatus(200)
 }
 
 func main() {
