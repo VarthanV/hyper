@@ -104,7 +104,45 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 	request.Path = parts[1]
 	request.Protocol = parts[2]
 
+	request.headers = make(map[string]string)
+
+	// Populate headers
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading header:", err)
+			return nil, err
+		}
+		line = strings.TrimSpace(line)
+		// Break if we reach an empty line (end of headers)
+		if line == "" {
+			break
+		}
+
+		colonIndex := strings.Index(line, ":")
+		if colonIndex == -1 {
+			fmt.Println("Invalid header line:", line)
+			continue
+		}
+		key := strings.TrimSpace(line[:colonIndex])
+		value := strings.TrimSpace(line[colonIndex+1:])
+		request.headers[key] = value
+	}
+
 	log.Printf("%+v", request)
 
 	return nil, nil
 }
+
+/*
+Sample request line
+	POST /submit-form HTTP/1.1
+	Host: www.example.com
+	User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36
+	Content-Type: application/x-www-form-urlencoded
+	Content-Length: 27
+	Connection: keep-alive
+
+	username=johndoe&password=1234
+
+*/
