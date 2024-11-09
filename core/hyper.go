@@ -153,7 +153,6 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 	// Parse the equest line (e.g., "GET /path HTTP/1.1")
 	requestLine, err := reader.ReadString(delimNewLine)
 	if err != nil {
-		log.Println("error in reading request line ", err)
 		return nil, err
 	}
 	// Split into parts
@@ -172,7 +171,7 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 
 	// Populate headers
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := reader.ReadString(delimNewLine)
 		if err != nil {
 			fmt.Println("Error reading header:", err)
 			return nil, err
@@ -185,7 +184,6 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 
 		colonIndex := strings.Index(line, ":")
 		if colonIndex == -1 {
-			fmt.Println("Invalid header line:", line)
 			continue
 		}
 		key := strings.TrimSpace(line[:colonIndex])
@@ -195,18 +193,15 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 
 	//  If there’s a Content-Length header, read the body
 	if l, ok := request.headers["Content-Length"]; ok {
-		log.Println("reading content")
 
 		lint, err := strconv.Atoi(l)
 		if err != nil {
-			log.Println("invalid content length ", err)
 			return nil, err
 		}
 
 		body := make([]byte, lint)
 		_, err = reader.Read(body)
 		if err != nil {
-			log.Println("error in reading request body ", err)
 			return nil, err
 		}
 		request.Body = body
