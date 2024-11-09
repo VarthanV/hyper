@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -14,6 +15,12 @@ type Response struct {
 	statusCode int
 	headers    map[string]string
 	body       []byte
+}
+
+func newResponse() *Response {
+	return &Response{
+		headers: make(map[string]string),
+	}
 }
 
 // WriteStatus: Write the status code to be returned
@@ -50,4 +57,37 @@ func (r *Response) WriteString(status int, val string) {
 	r.body = []byte(val)
 	r.statusCode = status
 	r.headers[contentTypeHeader] = "text/plain"
+}
+
+// ToRaw converts the Response struct to a raw HTTP response string
+func (r *Response) ToRaw() string {
+	statusText := getStatusText(r.statusCode)
+
+	raw := fmt.Sprintf("HTTP/1.1 %d %s\r\n", r.statusCode, statusText)
+
+	// Append headers
+	for key, value := range r.headers {
+		raw += fmt.Sprintf("%s: %s\r\n", key, value)
+	}
+
+	// Add a blank line to separate headers from body
+	raw += "\r\n"
+
+	// Append the body if present
+	raw += string(r.body)
+
+	return raw
+}
+
+func getStatusText(code int) string {
+	switch code {
+	case 200:
+		return "OK"
+	case 404:
+		return "Not Found"
+	case 500:
+		return "Internal Server Error"
+	default:
+		return "Unknown Status"
+	}
 }
