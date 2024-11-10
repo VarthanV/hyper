@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/VarthanV/hyper/core"
 )
@@ -31,6 +32,23 @@ func main() {
 
 	h.GET("/q", func(req *core.Request, res *core.ResponseWriter) {
 		res.WriteString(200, fmt.Sprintf("got query %s", req.Query("search")))
+	})
+
+	h.POST("/post", func(req *core.Request, res *core.ResponseWriter) {
+		type s struct {
+			Foo string `json:"foo"`
+		}
+
+		val := s{}
+		err := req.Bind(&val)
+		if err != nil {
+			log.Println("unable to bind req ", err)
+			res.WriteStatus(500)
+			return
+		}
+		log.Printf("%+v\n", val)
+
+		res.WriteJSON(200, val)
 	})
 
 	h.ConfigureStaticPath("./static")
