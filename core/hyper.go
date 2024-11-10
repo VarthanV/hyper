@@ -71,6 +71,11 @@ func (h *hyper) mapHandlers(path string, method HttpMethod, handler HandlerFunc)
 	if _, ok := h.routesMap[method]; !ok {
 		h.routesMap[method] = make(map[string]HandlerFunc)
 	}
+
+	if !strings.HasPrefix(path, "^") {
+		path = fmt.Sprintf(`^%s$`, path)
+	}
+
 	h.routesMap[method][path] = handler
 }
 
