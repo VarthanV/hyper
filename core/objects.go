@@ -1,5 +1,11 @@
 package core
 
 const (
-	delimNewLine = '\n'
+	delimNewLine            = '\n'
+	pathParamMatchingRegexp = `^/[^/]+/:.+$`
 )
+
+type routeStruct struct {
+	UserGivenPath string
+	Handler       HandlerFunc
+}

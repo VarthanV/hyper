@@ -15,6 +15,7 @@ type Request struct {
 	RemoteHostAddr net.Addr
 	queryParams    map[string]string
 	headers        map[string]string
+	pathParams     map[string]string
 }
 
 func (r *Request) GetHeader(key string) string {
@@ -31,4 +32,8 @@ func (r *Request) Bind(i interface{}) error {
 		return errors.Wrap(err, "unable to bind request")
 	}
 	return nil
+}
+
+func (r *Request) Param(key string) string {
+	return r.pathParams[key]
 }

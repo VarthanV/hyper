@@ -14,13 +14,13 @@ import (
 )
 
 type hyper struct {
-	routesMap  map[HttpMethod]map[string]HandlerFunc
+	routes     map[HttpMethod]map[string]routeStruct
 	staticPath string
 }
 
 func New() *hyper {
 	return &hyper{
-		routesMap:  make(map[HttpMethod]map[string]HandlerFunc),
+		routes:     make(map[HttpMethod]map[string]routeStruct),
 		staticPath: "",
 	}
 }
@@ -37,9 +37,9 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 	}
 
 	// Print the routes:handler mapping
-	for method, routes := range h.routesMap {
-		for route, f := range routes {
-			fmt.Printf("%s %s ----------------------> %s\n", method, route, runtimeutils.GetFunctionName(f))
+	for method, routes := range h.routes {
+		for _, f := range routes {
+			fmt.Printf("%s %s ----------------------> %s\n", method, f.UserGivenPath, runtimeutils.GetFunctionName(f.Handler))
 		}
 	}
 
@@ -68,15 +68,16 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 }
 
 func (h *hyper) mapHandlers(path string, method HttpMethod, handler HandlerFunc) {
-	if _, ok := h.routesMap[method]; !ok {
-		h.routesMap[method] = make(map[string]HandlerFunc)
+	if _, ok := h.routes[method]; !ok {
+		h.routes[method] = make(map[string]routeStruct)
 	}
 
+	compliledPath := path
 	if !strings.HasPrefix(path, "^") {
-		path = fmt.Sprintf(`^%s$`, path)
+		compliledPath = fmt.Sprintf(`^%s$`, path)
 	}
 
-	h.routesMap[method][path] = handler
+	h.routes[method][compliledPath] = routeStruct{UserGivenPath: path, Handler: handler}
 }
 
 func (h *hyper) POST(path string, handler HandlerFunc) {
@@ -136,7 +137,7 @@ func (h *hyper) handleConnection(c net.Conn) {
 		log.Printf("%+v", request)
 
 		if request != nil {
-			handlerMap, ok := h.routesMap[request.Method]
+			handlerMap, ok := h.routes[request.Method]
 			if !ok {
 				log.Println("handler not found for method")
 				return
@@ -144,11 +145,18 @@ func (h *hyper) handleConnection(c net.Conn) {
 
 			isHandlerMatched := false
 
-			for k, f := range handlerMap {
-				compiledPath := regexp.MustCompile(k)
+			for path, r := range handlerMap {
+				compiledPath := regexp.MustCompile(path)
 				isHandlerMatched = compiledPath.MatchString(request.Path)
 				if isHandlerMatched {
-					f(request, res)
+					// Check if it matches the /:x param
+					re := regexp.MustCompile(`^/([^/]+)$`)
+					match := re.FindStringSubmatch(path)
+					if match != nil {
+						log.Println("match found with id ", 1)
+					}
+
+					r.Handler(request, res)
 				}
 			}
 		}

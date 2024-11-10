@@ -8,7 +8,7 @@ import (
 )
 
 func handleFoo(req *core.Request, res *core.ResponseWriter) {
-	res.WriteString(200, "hello nigga")
+	res.WriteString(200, "hello foo")
 }
 
 func main() {
@@ -43,12 +43,16 @@ func main() {
 		err := req.Bind(&val)
 		if err != nil {
 			log.Println("unable to bind req ", err)
-			res.WriteStatus(500)
+			res.WriteJSON(400, map[string]string{"error": "invalid request"})
 			return
 		}
 		log.Printf("%+v\n", val)
 
 		res.WriteJSON(200, val)
+	})
+
+	h.GET("/:id", func(req *core.Request, res *core.ResponseWriter) {
+		res.WriteStatus(200)
 	})
 
 	h.ConfigureStaticPath("./static")
