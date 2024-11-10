@@ -13,30 +13,30 @@ const (
 	contentLength     = "Content-Length"
 )
 
-type Response struct {
+type ResponseWriter struct {
 	statusCode int
 	headers    map[string]string
 	body       []byte
 }
 
-func newResponse() *Response {
-	return &Response{
+func newResponse() *ResponseWriter {
+	return &ResponseWriter{
 		headers: make(map[string]string),
 	}
 }
 
 // WriteStatus: Write the status code to be returned
-func (r *Response) WriteStatus(code int) {
+func (r *ResponseWriter) WriteStatus(code int) {
 	r.statusCode = code
 }
 
 // WriteHeader: Write response headers
-func (r *Response) WriteHeader(key, val string) {
+func (r *ResponseWriter) WriteHeader(key, val string) {
 	r.headers[key] = val
 }
 
 // WriteJSON: Writes json to the body
-func (r *Response) WriteJSON(status int, b interface{}) {
+func (r *ResponseWriter) WriteJSON(status int, b interface{}) {
 	marshalledBytes, err := json.Marshal(b)
 	if err != nil {
 		panic(errors.Wrap(err, "error when writing json unable to marshal").Error())
@@ -48,21 +48,26 @@ func (r *Response) WriteJSON(status int, b interface{}) {
 }
 
 // WriteHTML: Writes HTML to the body
-func (r *Response) WriteHTML(status int, html string) {
+func (r *ResponseWriter) WriteHTML(status int, html string) {
 	r.headers[contentTypeHeader] = "text/html"
 	r.statusCode = status
 	r.body = []byte(html)
 }
 
 // WriteString: Writes string to the body
-func (r *Response) WriteString(status int, val string) {
+func (r *ResponseWriter) WriteString(status int, val string) {
 	r.body = []byte(val)
 	r.statusCode = status
 	r.headers[contentTypeHeader] = "text/plain"
 }
 
+// Write: Writes raw byte to response
+func (r *ResponseWriter) Write(b []byte) {
+	r.body = b
+}
+
 // ToRaw converts the Response struct to a raw HTTP response string
-func (r *Response) ToRaw() string {
+func (r *ResponseWriter) ToRaw() string {
 	statusText := getStatusText(r.statusCode)
 
 	r.headers[contentLength] = strconv.Itoa(len(r.body))

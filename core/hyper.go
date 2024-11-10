@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -13,12 +14,14 @@ import (
 )
 
 type hyper struct {
-	routesMap map[HttpMethod]map[string]HandlerFunc
+	routesMap  map[HttpMethod]map[string]HandlerFunc
+	staticPath string
 }
 
 func New() *hyper {
 	return &hyper{
-		routesMap: make(map[HttpMethod]map[string]HandlerFunc),
+		routesMap:  make(map[HttpMethod]map[string]HandlerFunc),
+		staticPath: "",
 	}
 }
 
@@ -117,24 +120,31 @@ func (h *hyper) handleConnection(c net.Conn) {
 
 		// Release the sem
 		<-sem
+		res := newResponse()
+
 		request, err := h.parseRequest(c)
 		if err != nil {
-			log.Println("error in parsing request")
+			log.Println("error in parsing request ", err)
+			return
 		}
 
 		log.Printf("%+v", request)
 
-		handlerMap, ok := h.routesMap[request.Method]
-		if !ok {
-			// TODO: send 404 response
-			c.Close()
-			return
-		}
+		if request != nil {
+			handlerMap, ok := h.routesMap[request.Method]
+			if !ok {
+				log.Println("handler not found for method")
+				return
+			}
 
-		res := newResponse()
-		for k, f := range handlerMap {
-			if k == request.Path {
-				f(request, res)
+			isHandlerMatched := false
+
+			for k, f := range handlerMap {
+				compiledPath := regexp.MustCompile(k)
+				isHandlerMatched = compiledPath.MatchString(request.Path)
+				if isHandlerMatched {
+					f(request, res)
+				}
 			}
 		}
 
