@@ -13,11 +13,16 @@ type Request struct {
 	Method         HttpMethod
 	Body           []byte
 	RemoteHostAddr net.Addr
+	queryParams    map[string]string
 	headers        map[string]string
 }
 
 func (r *Request) GetHeader(key string) string {
 	return r.headers[key]
+}
+
+func (r *Request) Query(key string) string {
+	return r.queryParams[key]
 }
 
 func (r *Request) Bind(i interface{}) error {

@@ -191,6 +191,24 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 
 	request.headers = make(map[string]string)
 
+	queryParams := make(map[string]string)
+	if idx := strings.Index(request.Path, "?"); idx != -1 {
+		queryString := request.Path[idx+1:]
+		request.Path = request.Path[:idx]
+
+		queryPairs := strings.Split(queryString, "&")
+		for _, pair := range queryPairs {
+			kv := strings.SplitN(pair, "=", 2)
+			if len(kv) == 2 {
+				key := kv[0]
+				value := kv[1]
+				queryParams[key] = value
+			}
+		}
+	}
+
+	request.queryParams = queryParams
+
 	// Populate headers
 	for {
 		line, err := reader.ReadString(delimNewLine)

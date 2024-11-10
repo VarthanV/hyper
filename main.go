@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/VarthanV/hyper/core"
 )
 
@@ -25,6 +27,10 @@ func main() {
 
 	h.GET("/pong", func(req *core.Request, res *core.ResponseWriter) {
 		res.WriteString(200, "PONG")
+	})
+
+	h.GET("/q", func(req *core.Request, res *core.ResponseWriter) {
+		res.WriteString(200, fmt.Sprintf("got query %s", req.Query("search")))
 	})
 
 	h.ConfigureStaticPath("./static")
