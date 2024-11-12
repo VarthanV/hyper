@@ -14,14 +14,16 @@ import (
 )
 
 type hyper struct {
-	routes     map[HttpMethod]map[string]routeStruct
-	staticPath string
+	routes        map[HttpMethod]map[string]routeStruct
+	staticPath    string
+	templatesPath string
 }
 
 func New() *hyper {
 	return &hyper{
-		routes:     make(map[HttpMethod]map[string]routeStruct),
-		staticPath: "",
+		routes:        make(map[HttpMethod]map[string]routeStruct),
+		staticPath:    "",
+		templatesPath: "./templates",
 	}
 }
 
@@ -166,7 +168,7 @@ func (h *hyper) handleConnection(c net.Conn) {
 			log.Println("unable to write to conn ", err)
 		}
 
-		log.Printf("%s %s  %d", request.Method, request.Path, w.statusCode)
+		log.Printf("%s %s  %d", request.Method, request.Path, w.StatusCode())
 	}
 
 	go handleConn(c)
@@ -180,7 +182,7 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 	}
 	reader := bufio.NewReader(conn)
 
-	// Parse the equest line (e.g., "GET /path HTTP/1.1")
+	// Parse the request line (e.g., "GET /path HTTP/1.1")
 	requestLine, err := reader.ReadString(delimNewLine)
 	if err != nil {
 		return nil, err

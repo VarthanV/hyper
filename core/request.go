@@ -15,6 +15,7 @@ type Request struct {
 	RemoteHostAddr net.Addr
 	queryParams    map[string]string
 	headers        map[string]string
+	ContentLength  int64
 	pathParams     map[string]string
 }
 

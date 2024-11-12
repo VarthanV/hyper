@@ -15,16 +15,22 @@ const (
 )
 
 func (h *hyper) ConfigureStaticPath(path string) {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		log.Fatal("error in configuring static path ", err)
+	if filepath.IsAbs(path) {
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			log.Fatal("error in configuring static path ", err)
+		}
+		h.staticPath = absPath
+	} else {
+		h.staticPath = path
 	}
-	h.staticPath = absPath
-	log.Println("Configured static file path to ", absPath)
+
+	log.Println("Configured static file path to ", h.staticPath)
+
 	h.GET(staticRoute, h.staticHandler)
 }
 
-func (h *hyper) staticHandler(w *ResponseWriter, r *Request) {
+func (h *hyper) staticHandler(w ResponseWriter, r *Request) {
 	re := regexp.MustCompile(`^/static/(.*)`)
 	match := re.FindStringSubmatch(r.Path)
 	if len(match) < 1 {

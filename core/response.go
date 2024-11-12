@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -13,30 +14,41 @@ const (
 	contentLength     = "Content-Length"
 )
 
-type ResponseWriter struct {
-	statusCode int
-	headers    map[string]string
-	body       []byte
+type ResponseWriter interface {
+	WriteStatus(code int)
+	Write([]byte) (int, error)
+	WriteHeader(key, val string)
+	WriteJSON(status int, b interface{})
+	WriteHTML(status int, html string)
+	WriteString(status int, val string)
+	ToRaw() string
+	StatusCode() int
 }
 
-func newResponseWriter() *ResponseWriter {
-	return &ResponseWriter{
+type responseWriter struct {
+	statusCode int
+	headers    map[string]string
+	body       bytes.Buffer
+}
+
+func newResponseWriter() ResponseWriter {
+	return &responseWriter{
 		headers: make(map[string]string),
 	}
 }
 
 // WriteStatus: Write the status code to be returned
-func (r *ResponseWriter) WriteStatus(code int) {
+func (r *responseWriter) WriteStatus(code int) {
 	r.statusCode = code
 }
 
 // WriteHeader: Write response headers
-func (r *ResponseWriter) WriteHeader(key, val string) {
+func (r *responseWriter) WriteHeader(key, val string) {
 	r.headers[key] = val
 }
 
 // WriteJSON: Writes json to the body
-func (r *ResponseWriter) WriteJSON(status int, b interface{}) {
+func (r *responseWriter) WriteJSON(status int, b interface{}) {
 	marshalledBytes, err := json.Marshal(b)
 	if err != nil {
 		panic(errors.Wrap(err, "error when writing json unable to marshal").Error())
@@ -44,33 +56,33 @@ func (r *ResponseWriter) WriteJSON(status int, b interface{}) {
 
 	r.headers[contentTypeHeader] = "application/json"
 	r.statusCode = status
-	r.body = marshalledBytes
+	r.body.Write(marshalledBytes)
 }
 
 // WriteHTML: Writes HTML to the body
-func (r *ResponseWriter) WriteHTML(status int, html string) {
+func (r *responseWriter) WriteHTML(status int, html string) {
 	r.headers[contentTypeHeader] = "text/html"
 	r.statusCode = status
-	r.body = []byte(html)
+	r.body.Write([]byte(html))
 }
 
 // WriteString: Writes string to the body
-func (r *ResponseWriter) WriteString(status int, val string) {
-	r.body = []byte(val)
+func (r *responseWriter) WriteString(status int, val string) {
+	r.body.Write([]byte(val))
 	r.statusCode = status
 	r.headers[contentTypeHeader] = "text/plain"
 }
 
 // Write: Writes raw byte to response
-func (r *ResponseWriter) Write(b []byte) {
-	r.body = b
+func (r *responseWriter) Write(b []byte) (int, error) {
+	return r.body.Write(b)
 }
 
 // ToRaw converts the Response struct to a raw HTTP response string
-func (r *ResponseWriter) ToRaw() string {
+func (r *responseWriter) ToRaw() string {
 	statusText := getStatusText(r.statusCode)
 
-	r.headers[contentLength] = strconv.Itoa(len(r.body))
+	r.headers[contentLength] = strconv.Itoa(r.body.Len())
 	raw := fmt.Sprintf("HTTP/1.1 %d %s\r\n", r.statusCode, statusText)
 
 	// Append headers
@@ -82,7 +94,7 @@ func (r *ResponseWriter) ToRaw() string {
 	raw += "\r\n"
 
 	// Append the body if present
-	raw += string(r.body)
+	raw += r.body.String()
 
 	return raw
 }
@@ -98,4 +110,9 @@ func getStatusText(code int) string {
 	default:
 		return "Unknown Status"
 	}
+}
+
+// GetStatus implements ResponseWriter.
+func (r *responseWriter) StatusCode() int {
+	return r.statusCode
 }
