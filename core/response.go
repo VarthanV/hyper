@@ -56,21 +56,22 @@ func (r *responseWriter) WriteJSON(status int, b interface{}) {
 
 	r.headers[contentTypeHeader] = "application/json"
 	r.statusCode = status
-	r.body.Write(marshalledBytes)
+	r.Write(marshalledBytes)
 }
 
 // WriteHTML: Writes HTML to the body
 func (r *responseWriter) WriteHTML(status int, html string) {
 	r.headers[contentTypeHeader] = "text/html"
 	r.statusCode = status
-	r.body.Write([]byte(html))
+	r.Write([]byte(html))
 }
 
 // WriteString: Writes string to the body
 func (r *responseWriter) WriteString(status int, val string) {
-	r.body.Write([]byte(val))
 	r.statusCode = status
 	r.headers[contentTypeHeader] = "text/plain"
+	r.Write([]byte(val))
+
 }
 
 // Write: Writes raw byte to response
@@ -112,7 +113,7 @@ func getStatusText(code int) string {
 	}
 }
 
-// GetStatus implements ResponseWriter.
+// StatusCode implements ResponseWriter.
 func (r *responseWriter) StatusCode() int {
 	return r.statusCode
 }

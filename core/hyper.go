@@ -182,7 +182,7 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 	}
 	reader := bufio.NewReader(conn)
 
-	// Parse the request line (e.g., "GET /path HTTP/1.1")
+	// Parse the equest line (e.g., "GET /path HTTP/1.1")
 	requestLine, err := reader.ReadString(delimNewLine)
 	if err != nil {
 		return nil, err
