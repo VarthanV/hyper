@@ -126,7 +126,7 @@ func (h *hyper) handleConnection(c net.Conn) {
 
 		// Release the sem
 		<-sem
-		res := newResponse()
+		w := newResponseWriter()
 
 		request, err := h.parseRequest(c)
 		if err != nil {
@@ -156,17 +156,17 @@ func (h *hyper) handleConnection(c net.Conn) {
 						log.Println("match found with id ", 1)
 					}
 
-					r.Handler(request, res)
+					r.Handler(w, request)
 				}
 			}
 		}
 
-		_, err = c.Write([]byte(res.ToRaw()))
+		_, err = c.Write([]byte(w.ToRaw()))
 		if err != nil {
 			log.Println("unable to write to conn ", err)
 		}
 
-		log.Printf("%s %s  %d", request.Method, request.Path, res.statusCode)
+		log.Printf("%s %s  %d", request.Method, request.Path, w.statusCode)
 	}
 
 	go handleConn(c)

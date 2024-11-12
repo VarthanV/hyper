@@ -1,3 +1,3 @@
 package core
 
-type HandlerFunc func(req *Request, res *ResponseWriter)
+type HandlerFunc func(w *ResponseWriter, request *Request)

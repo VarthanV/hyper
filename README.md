@@ -18,8 +18,8 @@ import hyper "github.com/VarthanV/hyper/core"
 
 func main() {
 	h := hyper.New()
-	h.GET("/ping", func(req *hyper.Request, res *hyper.ResponseWriter) {
-		res.WriteString(200, "PONG")
+	h.GET("/ping", func(w *hyper.ResponseWriter, request *hyper.Request) {
+		w.WriteString(200, "PONG")
 	})
 
 	h.ListenAndServe("localhost", "6060", `

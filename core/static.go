@@ -24,7 +24,7 @@ func (h *hyper) ConfigureStaticPath(path string) {
 	h.GET(staticRoute, h.staticHandler)
 }
 
-func (h *hyper) staticHandler(r *Request, w *ResponseWriter) {
+func (h *hyper) staticHandler(w *ResponseWriter, r *Request) {
 	re := regexp.MustCompile(`^/static/(.*)`)
 	match := re.FindStringSubmatch(r.Path)
 	if len(match) < 1 {

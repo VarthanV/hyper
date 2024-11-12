@@ -19,7 +19,7 @@ type ResponseWriter struct {
 	body       []byte
 }
 
-func newResponse() *ResponseWriter {
+func newResponseWriter() *ResponseWriter {
 	return &ResponseWriter{
 		headers: make(map[string]string),
 	}
