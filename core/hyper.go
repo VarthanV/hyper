@@ -53,6 +53,7 @@ func (h *hyper) ListenAndServe(host, port, startupMessage string) {
 	}
 	defer l.Close()
 	log.Printf("Listening on %s:%s\n", host, port)
+	log.Printf("Templates directory configured to %s \n", h.templatesPath)
 
 	startupMessageChan <- startupMessage
 	close(startupMessageChan)
@@ -128,7 +129,7 @@ func (h *hyper) handleConnection(c net.Conn) {
 
 		// Release the sem
 		<-sem
-		w := newResponseWriter()
+		w := newResponseWriter(h.templatesPath)
 
 		request, err := h.parseRequest(c)
 		if err != nil {
@@ -259,16 +260,3 @@ func (h *hyper) parseRequest(conn net.Conn) (*Request, error) {
 
 	return request, nil
 }
-
-/*
-Sample raw request
-	POST /submit-form HTTP/1.1
-	Host: www.example.com
-	User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36
-	Content-Type: application/x-www-form-urlencoded
-	Content-Length: 27
-	Connection: keep-alive
-
-	username=johndoe&password=1234
-
-*/

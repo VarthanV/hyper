@@ -26,14 +26,16 @@ type ResponseWriter interface {
 }
 
 type responseWriter struct {
-	statusCode int
-	headers    map[string]string
-	body       bytes.Buffer
+	statusCode    int
+	headers       map[string]string
+	body          bytes.Buffer
+	templatesPath string
 }
 
-func newResponseWriter() ResponseWriter {
+func newResponseWriter(templatesPath string) ResponseWriter {
 	return &responseWriter{
-		headers: make(map[string]string),
+		headers:       make(map[string]string),
+		templatesPath: templatesPath,
 	}
 }
 
