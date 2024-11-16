@@ -1,4 +1,4 @@
-package core
+package hyper
 
 import (
 	"bufio"

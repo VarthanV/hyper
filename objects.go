@@ -1,4 +1,4 @@
-package core
+package hyper
 
 const (
 	delimNewLine            = '\n'
