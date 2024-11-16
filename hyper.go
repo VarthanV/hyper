@@ -137,8 +137,6 @@ func (h *hyper) handleConnection(c net.Conn) {
 			return
 		}
 
-		log.Printf("%+v", request)
-
 		if request != nil {
 			handlerMap, ok := h.routes[request.Method]
 			if !ok {
