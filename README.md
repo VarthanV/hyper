@@ -14,7 +14,7 @@ go get github.com/VarthanV/hyper
 ```go
 package main
 
-import hyper "github.com/VarthanV/hyper/core"
+import "github.com/VarthanV/hyper"
 
 func main() {
 	h := hyper.New()
@@ -32,6 +32,11 @@ func main() {
                                
 `)
 }
+```
+
+## Sample Blog application 
+
+[hyper-blog](https://github.com/VarthanV/hyper-blog)
 
 ```
 
